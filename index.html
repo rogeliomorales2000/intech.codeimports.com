@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login | Intech CRM</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      width: 100vw;
+      background: url('MLOps.webp') no-repeat center center/cover;
+    }
+
+    .login-box {
+      background: rgba(0, 30, 60, 0.9);
+      padding: 40px;
+      width: 100%;
+      max-width: 380px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+      color: #fff;
+    }
+
+    .login-box h1 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #4da3ff;
+    }
+
+    .login-box label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+
+    .login-box input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 18px;
+      border: none;
+      border-radius: 6px;
+      outline: none;
+      font-size: 14px;
+    }
+
+    .login-box button {
+      width: 100%;
+      padding: 12px;
+      background: #1e90ff;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .login-box button:hover {
+      background: #187bcd;
+    }
+
+    .error {
+      margin-top: 15px;
+      text-align: center;
+      color: #ff6b6b;
+      font-size: 14px;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="login-box">
+    <h1>Intech CRM</h1>
+
+    <label for="email">Usuário</label>
+    <input type="text" id="email" placeholder="Digite seu usuário" />
+
+    <label for="password">Senha</label>
+    <input type="password" id="password" placeholder="Digite sua senha" />
+
+    <button onclick="login()">Entrar</button>
+
+    <div class="error" id="errorMsg"></div>
+  </div>
+
+  <script>
+    // ============================
+    // 🔐 VERIFICA TOKEN AO CARREGAR
+    // ============================
+    const tokenExistente = localStorage.getItem('token');
+    if (tokenExistente) {
+      window.location.href = '/login/admin/';
+    }
+
+    async function login() {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const errorMsg = document.getElementById('errorMsg');
+
+      errorMsg.style.display = 'none';
+
+      if (!email || !password) {
+        errorMsg.textContent = 'Preencha todos os campos.';
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          'http://192.168.15.11:3000/login/index.html',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+          }
+        );
+
+        const data = await response.json();
+
+        if (response.ok && data.autenticado) {
+          // 🔐 SALVA JWT
+          localStorage.setItem('token', data.token);
+
+          // ✅ REDIRECT FIXO (CORREÇÃO)
+          window.location.href = '/login/admin/';
+        } else {
+          errorMsg.textContent = data.mensagem || 'Erro ao autenticar.';
+          errorMsg.style.display = 'block';
+        }
+
+      } catch (error) {
+        errorMsg.textContent = 'Erro de conexão com o servidor.';
+        errorMsg.style.display = 'block';
+        console.error(error);
+      }
+    }
+  </script>
+
+</body>
+</html>
